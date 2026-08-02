@@ -1,9 +1,15 @@
 services:
   - type: web
-    name: baixarmp3
+    name: music-downloader
     runtime: python
-    buildCommand: pip install -r requirements.txt
+
+    buildCommand: |
+      apt-get update
+      apt-get install -y ffmpeg
+      pip install -r requirements.txt
+
     startCommand: gunicorn app:app
+
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
