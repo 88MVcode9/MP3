@@ -148,15 +148,25 @@ def safe_job(job):
 
 def ydl_options(
         folder,
-        audio=True
+        audio=True,
+        loose_format=False
 ):
+
+    if loose_format:
+        # Fallback usado quando o formato "ideal" não existe para o
+        # vídeo (erro "Requested format is not available"). "best"
+        # sozinho aceita qualquer formato disponível, seja qual for.
+        formato = "best"
+    else:
+        formato = (
+            "bestaudio[ext=m4a]/bestaudio/best"
+            if audio
+            else "bestvideo+bestaudio/best/best"
+        )
 
     options = {
 
-        "format":
-            "bestaudio/best"
-            if audio
-            else "bestvideo+bestaudio/best",
+        "format": formato,
 
         "outtmpl":
             os.path.join(
@@ -184,13 +194,39 @@ def ydl_options(
 
         "nocheckcertificate": True,
 
+        "geo_bypass": True,
+
         "user_agent": USER_AGENT,
 
         "retries": 10,
 
         "fragment_retries": 10,
 
+        "extractor_retries": 5,
+
         "sleep_interval_requests": 2,
+
+        # Pequena pausa aleatória entre requisições para não parecer
+        # um bot fazendo chamadas em sequência muito rápida.
+        "sleep_interval": 1,
+
+        "max_sleep_interval": 4,
+
+        # Vários "player clients" ao mesmo tempo: o yt-dlp combina os
+        # formatos vistos por cada um. Usar só ios/android às vezes
+        # deixa de fora formatos que só aparecem no client web/tv,
+        # o que gera "Requested format is not available". Combinar
+        # todos aumenta a chance de achar um formato válido.
+        "extractor_args": {
+            "youtube": {
+                "player_client": [
+                    "android",
+                    "ios",
+                    "web",
+                    "tv",
+                ],
+            }
+        },
 
     }
 
@@ -251,12 +287,13 @@ def download_video(
     )
 
 
-    try:
+    def tentar_download(loose_format):
 
         with yt_dlp.YoutubeDL(
             ydl_options(
                 folder,
-                audio
+                audio,
+                loose_format=loose_format
             )
         ) as ydl:
 
@@ -266,14 +303,39 @@ def download_video(
                 ]
             )
 
+
+    try:
+
+        tentar_download(loose_format=False)
+
     except Exception as e:
 
-        # Propaga o erro real do yt-dlp (ex.: "Sign in to confirm
-        # you're not a bot", "HTTP Error 403", "ffmpeg not found")
-        # em vez de mascará-lo com uma mensagem genérica.
-        raise Exception(
-            f"Erro do yt-dlp: {e}"
-        )
+        mensagem = str(e)
+
+        # "Requested format is not available" acontece quando o
+        # vídeo não tem o formato "ideal" (ex.: bestaudio) mas tem
+        # outros formatos utilizáveis. Nesse caso, tentamos de novo
+        # com "best", que aceita qualquer formato existente.
+        if "Requested format is not available" in mensagem:
+
+            try:
+
+                tentar_download(loose_format=True)
+
+            except Exception as e2:
+
+                raise Exception(
+                    f"Erro do yt-dlp: {e2}"
+                )
+
+        else:
+
+            # Propaga o erro real do yt-dlp (ex.: "Sign in to confirm
+            # you're not a bot", "HTTP Error 403", "ffmpeg not found")
+            # em vez de mascará-lo com uma mensagem genérica.
+            raise Exception(
+                f"Erro do yt-dlp: {e}"
+            )
 
 
     files = glob.glob(
