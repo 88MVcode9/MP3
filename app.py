@@ -166,11 +166,17 @@ def ydl_options(
 
         "noplaylist": True,
 
-        "quiet": True,
+        # quiet/no_warnings ficam desligados para que os erros reais
+        # do yt-dlp apareçam no log (Render > Logs) em vez de serem
+        # engolidos silenciosamente.
+        "quiet": False,
 
-        "no_warnings": True,
+        "no_warnings": False,
 
-        "ignoreerrors": True,
+        # ignoreerrors=False aqui é proposital: queremos que a
+        # exceção do yt-dlp suba para o try/except em download_video(),
+        # em vez de ser ignorada e resultar em "nenhum arquivo criado".
+        "ignoreerrors": False,
 
         "restrictfilenames": True,
 
@@ -180,12 +186,11 @@ def ydl_options(
 
         "user_agent": USER_AGENT,
 
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["ios", "android"],
-                "skip": ["hls", "dash"],
-            }
-        },
+        "retries": 10,
+
+        "fragment_retries": 10,
+
+        "sleep_interval_requests": 2,
 
     }
 
@@ -246,17 +251,28 @@ def download_video(
     )
 
 
-    with yt_dlp.YoutubeDL(
-        ydl_options(
-            folder,
-            audio
-        )
-    ) as ydl:
+    try:
 
-        ydl.download(
-            [
-                url
-            ]
+        with yt_dlp.YoutubeDL(
+            ydl_options(
+                folder,
+                audio
+            )
+        ) as ydl:
+
+            ydl.download(
+                [
+                    url
+                ]
+            )
+
+    except Exception as e:
+
+        # Propaga o erro real do yt-dlp (ex.: "Sign in to confirm
+        # you're not a bot", "HTTP Error 403", "ffmpeg not found")
+        # em vez de mascará-lo com uma mensagem genérica.
+        raise Exception(
+            f"Erro do yt-dlp: {e}"
         )
 
 
@@ -268,10 +284,9 @@ def download_video(
     if not files:
 
         raise Exception(
-            "Não foi possível baixar o vídeo. "
-            "O YouTube pode estar bloqueando a requisição. "
-            "Configure a variável de ambiente YOUTUBE_COOKIES "
-            "com cookies válidos para contornar a detecção de bot."
+            "O download terminou sem erros, mas nenhum arquivo foi "
+            "criado. Verifique se o ffmpeg está instalado no ambiente "
+            "e se a URL fornecida é válida."
         )
 
 
