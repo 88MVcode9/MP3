@@ -40,6 +40,26 @@ Python automaticamente. No painel do Render:
 3. Selecione **Docker** como ambiente de build.
 4. O `render.yaml` já está configurado para `runtime: docker`.
 
+### ⚠️ Runtime JS (Deno) exigido pelo YouTube
+
+Desde 2026, o YouTube passou a exigir a resolução de desafios JavaScript
+para liberar os formatos reais de áudio/vídeo. Sem isso, o yt-dlp só
+enxerga formatos de imagem/thumbnail e falha com:
+
+```
+ERROR: [youtube] VIDEO_ID: Requested format is not available.
+```
+
+Para resolver, o `Dockerfile` já instala o **Deno** (runtime JS recomendado
+pelo yt-dlp) e o `requirements.txt` instala `yt-dlp[default]`, que traz o
+pacote `yt-dlp-ejs` com os scripts necessários. Isso é feito automaticamente
+no build do Docker — não precisa de nenhuma configuração extra.
+
+Se for rodar localmente (fora do Docker), instale o Deno manualmente:
+<https://docs.deno.com/runtime/getting_started/installation/>
+
+Mais detalhes técnicos: <https://github.com/yt-dlp/yt-dlp/wiki/EJS>
+
 ### Variáveis de ambiente (opcional, mas recomendado)
 
 | Variável           | Descrição                                                                 |
