@@ -22,6 +22,7 @@ import uuid
 import glob
 import time
 import shutil
+import tempfile
 
 from flask import (
     Flask,
@@ -58,6 +59,26 @@ os.makedirs(
 
 
 MAX_FILE_AGE = 3600  # 1 hora
+
+
+def get_cookie_file():
+
+    cookies = os.environ.get("YOUTUBE_COOKIES")
+
+    if not cookies:
+        return None
+
+    arquivo = tempfile.NamedTemporaryFile(
+        mode="w",
+        delete=False,
+        suffix=".txt"
+    )
+
+    arquivo.write(cookies)
+
+    arquivo.close()
+
+    return arquivo.name
 
 
 # =====================================================
@@ -145,6 +166,10 @@ def ydl_options(
         "socket_timeout": 30,
 
     }
+
+    cookie_file = get_cookie_file()
+    if cookie_file:
+        options["cookiefile"] = cookie_file
 
 
     if audio:
