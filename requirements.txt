@@ -1,0 +1,5 @@
+flask
+yt-dlp
+requests
+beautifulsoup4
+lxml
