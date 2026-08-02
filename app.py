@@ -228,6 +228,20 @@ def ydl_options(
             }
         },
 
+        # Runtime JS usado para resolver os desafios do YouTube (ver
+        # https://github.com/yt-dlp/yt-dlp/wiki/EJS). O Deno precisa
+        # estar instalado no ambiente (feito no Dockerfile).
+        "js_runtimes": {
+            "deno": {}
+        },
+
+        # Se o pacote yt-dlp-ejs (instalado via requirements.txt) ficar
+        # desatualizado em relação à versão do yt-dlp, isso permite que
+        # o Deno baixe os scripts corretos diretamente do GitHub.
+        "remote_components": [
+            "ejs:github"
+        ],
+
     }
 
     cookie_file = get_cookie_file()
@@ -390,6 +404,14 @@ def search_youtube(
                 "player_client": ["ios", "android"],
             }
         },
+
+        "js_runtimes": {
+            "deno": {}
+        },
+
+        "remote_components": [
+            "ejs:github"
+        ],
 
     }
 
