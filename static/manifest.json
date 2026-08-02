@@ -1,0 +1,21 @@
+{
+  "name": "Music Downloader",
+  "short_name": "MusicDL",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#0b0e14",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://github.com/88MVcode9/IMAGENS/blob/main/favicon/musica.jpeg?raw=true",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "https://github.com/88MVcode9/IMAGENS/blob/main/favicon/musica.jpeg?raw=true",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
