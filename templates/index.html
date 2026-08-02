@@ -1,113 +1,469 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<link rel="icon" href="https://github.com/88MVcode9/IMAGENS/blob/main/favicon/musica.jpeg?raw=true">
-<title>Music Downloader</title>
-<style>
-  :root { --bg:#0f1115; --card:#171a21; --accent:#5b8cff; --text:#eef1f7; --muted:#8b93a7; }
-  * { box-sizing:border-box; }
-  body { margin:0; font-family: -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--text); }
-  .wrap { max-width:640px; margin:60px auto; padding:0 20px; }
-  h1 { font-size:1.6rem; margin-bottom:4px; }
-  p.sub { color:var(--muted); margin-top:0; }
-  .card { background:var(--card); border-radius:14px; padding:22px; margin-top:20px; }
-  form { display:flex; gap:10px; }
-  input[type=text] { flex:1; padding:12px 14px; border-radius:10px; border:1px solid #2a2f3a; background:#0d0f14; color:var(--text); font-size:1rem; }
-  select { padding:12px; border-radius:10px; border:1px solid #2a2f3a; background:#0d0f14; color:var(--text); }
-  button { padding:12px 18px; border:none; border-radius:10px; background:var(--accent); color:#fff; font-weight:600; cursor:pointer; }
-  button:disabled { opacity:.6; cursor:progress; }
-  .resultado { display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid #262b36; }
-  .resultado:last-child { border-bottom:none; }
-  .status { margin-top:14px; color:var(--muted); font-size:.9rem; min-height:1.2em; }
-  a.baixar { color:var(--accent); text-decoration:none; font-weight:600; }
-</style>
+  <meta charset="UTF-8">
+  <link rel="icon" href="https://github.com/88MVcode9/IMAGENS/blob/main/favicon/musica.jpeg?raw=true">
+  <title>Music Downloader</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0b0e14;
+      color: #eef1f7;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    /* ===== CARD PRINCIPAL ===== */
+    .wrap {
+      max-width: 640px;
+      width: 100%;
+      background: rgba(22, 28, 36, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 32px;
+      padding: 40px 32px 48px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 0 1px rgba(46, 204, 113, 0.15);
+      border: 1px solid rgba(46, 204, 113, 0.10);
+      transition: box-shadow 0.3s ease;
+    }
+
+    .wrap:hover {
+      box-shadow: 0 24px 72px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(46, 204, 113, 0.25);
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 8px;
+    }
+
+    header .icon {
+      font-size: 2.4rem;
+      line-height: 1;
+    }
+
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #2ecc71, #27ae60);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sub {
+      color: #a8b2c9;
+      font-size: 1rem;
+      margin: 4px 0 0 0;
+      padding-left: 58px;
+      font-weight: 400;
+      letter-spacing: 0.2px;
+    }
+
+    /* ===== FORMULÁRIO ===== */
+    .card {
+      margin-top: 28px;
+    }
+
+    form {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      min-width: 200px;
+      position: relative;
+    }
+
+    .input-wrapper input {
+      width: 100%;
+      padding: 16px 18px 16px 48px;
+      border-radius: 16px;
+      border: 1px solid #2a303e;
+      background: #141a22;
+      color: #eef1f7;
+      font-size: 1rem;
+      font-weight: 450;
+      transition: all 0.25s ease;
+      outline: none;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .input-wrapper input::placeholder {
+      color: #6b7a93;
+      font-weight: 400;
+    }
+
+    .input-wrapper input:focus {
+      border-color: #2ecc71;
+      box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2), inset 0 2px 4px rgba(0, 0, 0, 0.3);
+      background: #171f29;
+    }
+
+    .input-wrapper .icon-input {
+      position: absolute;
+      left: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.2rem;
+      color: #6b7a93;
+      pointer-events: none;
+    }
+
+    button {
+      padding: 16px 28px;
+      border: none;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #2ecc71, #1e9b4f);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      box-shadow: 0 4px 14px rgba(46, 204, 113, 0.25);
+      letter-spacing: 0.3px;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(46, 204, 113, 0.35);
+      background: linear-gradient(135deg, #3bde7a, #25a85a);
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(0px);
+      box-shadow: 0 2px 8px rgba(46, 204, 113, 0.2);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: progress;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
+    button .btn-icon {
+      font-size: 1.2rem;
+    }
+
+    /* ===== STATUS ===== */
+    .status {
+      margin-top: 18px;
+      font-size: 0.95rem;
+      color: #a8b2c9;
+      min-height: 1.6em;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 4px;
+    }
+
+    .status .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid #2a303e;
+      border-top-color: #2ecc71;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* ===== LISTA DE RESULTADOS ===== */
+    #resultados {
+      margin-top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .resultado {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: rgba(20, 26, 34, 0.6);
+      border-radius: 14px;
+      border: 1px solid #222a36;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .resultado:hover {
+      background: rgba(28, 36, 48, 0.7);
+      border-color: #2ecc71;
+      box-shadow: 0 0 0 1px rgba(46, 204, 113, 0.15);
+    }
+
+    .resultado span {
+      font-weight: 450;
+      font-size: 0.95rem;
+      color: #eef1f7;
+      word-break: break-word;
+      padding-right: 12px;
+    }
+
+    .resultado button {
+      padding: 8px 18px;
+      font-size: 0.85rem;
+      border-radius: 40px;
+      background: rgba(46, 204, 113, 0.12);
+      color: #2ecc71;
+      border: 1px solid rgba(46, 204, 113, 0.25);
+      box-shadow: none;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(4px);
+    }
+
+    .resultado button:hover {
+      background: #2ecc71;
+      color: #0b0e14;
+      border-color: #2ecc71;
+      box-shadow: 0 4px 12px rgba(46, 204, 113, 0.25);
+    }
+
+    /* ===== LINK DE DOWNLOAD ===== */
+    a.baixar {
+      color: #2ecc71;
+      text-decoration: none;
+      font-weight: 600;
+      border-bottom: 1px dashed rgba(46, 204, 113, 0.3);
+      transition: border-color 0.2s;
+    }
+
+    a.baixar:hover {
+      border-bottom-color: #2ecc71;
+    }
+
+    /* ===== RESPONSIVIDADE ===== */
+    @media (max-width: 560px) {
+      .wrap {
+        padding: 28px 18px 32px;
+        border-radius: 24px;
+      }
+
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      .sub {
+        padding-left: 0;
+        margin-top: 4px;
+      }
+
+      form {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .input-wrapper input {
+        padding: 14px 16px 14px 44px;
+      }
+
+      button {
+        width: 100%;
+        justify-content: center;
+        padding: 16px;
+      }
+
+      .resultado {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .resultado span {
+        flex: 1 1 100%;
+      }
+
+      .resultado button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>🎵 Music Downloader</h1>
-  <p class="sub">Cole um link do YouTube ou busque por título/trecho da letra.</p>
+  <div class="wrap">
+    <header>
+      <span class="icon">🎵</span>
+      <h1>Music Downloader</h1>
+    </header>
+    <p class="sub">Cole um link do YouTube ou busque por título / trecho da letra</p>
 
-  <div class="card">
-    <form id="form-busca">
-      <input type="text" id="query" placeholder="Link do YouTube ou nome da música">
-      <select id="formato">
-        <option value="mp3">MP3</option>
-        <option value="mp4">MP4</option>
-      </select>
-      <button type="submit" id="btn-buscar">Buscar / Baixar</button>
-    </form>
-    <div class="status" id="status"></div>
-    <div id="resultados"></div>
+    <div class="card">
+      <form id="form-busca">
+        <div class="input-wrapper">
+          <span class="icon-input">🔍</span>
+          <input type="text" id="query" placeholder="Ex: https://youtu.be/... ou nome da música" autofocus>
+        </div>
+        <button type="submit" id="btn-buscar">
+          <span class="btn-icon">⬇</span> Buscar / Baixar
+        </button>
+      </form>
+
+      <div class="status" id="status">
+        <span>Pronto para buscar</span>
+      </div>
+
+      <div id="resultados"></div>
+    </div>
   </div>
-</div>
 
-<script>
-const form = document.getElementById('form-busca');
-const status = document.getElementById('status');
-const resultadosEl = document.getElementById('resultados');
-const btn = document.getElementById('btn-buscar');
+  <script>
+    (function() {
+      const form = document.getElementById('form-busca');
+      const status = document.getElementById('status');
+      const resultadosEl = document.getElementById('resultados');
+      const btn = document.getElementById('btn-buscar');
+      const queryInput = document.getElementById('query');
 
-function isUrl(s) { return /^https?:\/\//i.test(s.trim()); }
+      // ===== UTIL =====
+      function isUrl(s) {
+        return /^https?:\/\//i.test(s.trim());
+      }
 
-async function baixar(url) {
-  status.textContent = 'Baixando... isso pode levar alguns segundos.';
-  btn.disabled = true;
-  try {
-    const formato = document.getElementById('formato').value;
-    const r = await fetch('/api/download', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({url, formato})
-    });
-    const data = await r.json();
-    if (data.erro) { status.textContent = 'Erro: ' + data.erro; return; }
-    status.innerHTML = `Pronto! <a class="baixar" href="/api/file/${data.job}/${encodeURIComponent(data.arquivo)}">Clique aqui para baixar</a>`;
-  } catch (e) {
-    status.textContent = 'Erro de conexão: ' + e;
-  } finally {
-    btn.disabled = false;
-  }
-}
+      function setStatus(texto, isSpinner = false) {
+        if (isSpinner) {
+          status.innerHTML = `<span class="spinner"></span> ${texto}`;
+        } else {
+          status.innerHTML = texto;
+        }
+      }
 
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const query = document.getElementById('query').value.trim();
-  if (!query) return;
+      // ===== DOWNLOAD (APENAS MP3) =====
+      async function baixar(url) {
+        setStatus('⏳ Baixando... isso pode levar alguns segundos.', true);
+        btn.disabled = true;
+        try {
+          const response = await fetch('/api/download', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, formato: 'mp3' }) // fixo MP3
+          });
+          const data = await response.json();
+          if (data.erro) {
+            setStatus('❌ ' + data.erro);
+            return;
+          }
+          setStatus(
+            `✅ Pronto! <a class="baixar" href="/api/file/${data.job}/${encodeURIComponent(data.arquivo)}">Clique aqui para baixar</a>`
+          );
+        } catch (e) {
+          setStatus('❌ Erro de conexão: ' + e.message);
+        } finally {
+          btn.disabled = false;
+        }
+      }
 
-  if (isUrl(query)) {
-    baixar(query);
-    return;
-  }
+      // ===== BUSCA =====
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const query = queryInput.value.trim();
+        if (!query) {
+          setStatus('⚠️ Digite um link ou nome da música.');
+          return;
+        }
 
-  status.textContent = 'Buscando...';
-  resultadosEl.innerHTML = '';
-  btn.disabled = true;
-  try {
-    const r = await fetch('/api/search', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({query})
-    });
-    const data = await r.json();
-    if (data.erro) { status.textContent = 'Erro: ' + data.erro; return; }
-    status.textContent = data.resultados.length ? 'Escolha um resultado:' : 'Nada encontrado.';
-    data.resultados.forEach(res => {
-      const div = document.createElement('div');
-      div.className = 'resultado';
-      div.innerHTML = `<span>${res.titulo}</span>`;
-      const b = document.createElement('button');
-      b.textContent = 'Baixar';
-      b.onclick = () => baixar(res.url);
-      div.appendChild(b);
-      resultadosEl.appendChild(div);
-    });
-  } catch (e) {
-    status.textContent = 'Erro de conexão: ' + e;
-  } finally {
-    btn.disabled = false;
-  }
-});
-</script>
+        // Se for URL, baixa direto
+        if (isUrl(query)) {
+          baixar(query);
+          return;
+        }
+
+        // Busca
+        setStatus('🔎 Buscando...', true);
+        resultadosEl.innerHTML = '';
+        btn.disabled = true;
+
+        try {
+          const response = await fetch('/api/search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ query })
+          });
+          const data = await response.json();
+
+          if (data.erro) {
+            setStatus('❌ ' + data.erro);
+            return;
+          }
+
+          if (!data.resultados || data.resultados.length === 0) {
+            setStatus('😕 Nenhum resultado encontrado. Tente outro termo.');
+            return;
+          }
+
+          setStatus(`🎶 ${data.resultados.length} resultado(s) encontrado(s):`);
+
+          data.resultados.forEach(res => {
+            const div = document.createElement('div');
+            div.className = 'resultado';
+
+            const span = document.createElement('span');
+            span.textContent = res.titulo;
+
+            const btnDownload = document.createElement('button');
+            btnDownload.textContent = '⬇ Baixar';
+            btnDownload.setAttribute('aria-label', 'Baixar música');
+            btnDownload.onclick = () => baixar(res.url);
+
+            div.appendChild(span);
+            div.appendChild(btnDownload);
+            resultadosEl.appendChild(div);
+          });
+
+        } catch (e) {
+          setStatus('❌ Erro de conexão: ' + e.message);
+        } finally {
+          btn.disabled = false;
+        }
+      });
+
+      // ===== ENTER NO INPUT DISPARA SUBMIT =====
+      queryInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          form.dispatchEvent(new Event('submit'));
+        }
+      });
+
+      // ===== FOCUS NO INPUT =====
+      queryInput.focus();
+    })();
+  </script>
 </body>
 </html>
