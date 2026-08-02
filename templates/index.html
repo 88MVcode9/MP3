@@ -365,6 +365,16 @@
       }
 
       // ===== DOWNLOAD (APENAS MP3) =====
+      function nomeDoContentDisposition(header) {
+        if (!header) return null;
+        // Tenta filename="..." primeiro, depois filename*=UTF-8''...
+        const m1 = header.match(/filename="([^"]+)"/i);
+        if (m1) return decodeURIComponent(m1[1]);
+        const m2 = header.match(/filename\*=UTF-8''([^;]+)/i);
+        if (m2) return decodeURIComponent(m2[1]);
+        return null;
+      }
+
       async function baixar(url) {
         setStatus('⏳ Baixando... isso pode levar alguns segundos.', true);
         btn.disabled = true;
@@ -374,13 +384,43 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ url, formato: 'mp3' }) // fixo MP3
           });
-          const data = await response.json();
-          if (data.erro) {
-            setStatus('❌ ' + data.erro);
+
+          const contentType = response.headers.get('Content-Type') || '';
+
+          // Erro estruturado (JSON) vindo do backend
+          if (contentType.includes('application/json')) {
+            let data;
+            try {
+              data = await response.json();
+            } catch (parseErr) {
+              setStatus(`❌ Erro inesperado do servidor (HTTP ${response.status}). Tente novamente.`);
+              return;
+            }
+            setStatus('❌ ' + (data.erro || `Erro HTTP ${response.status}.`));
             return;
           }
+
+          // Resposta que não é nem JSON nem sucesso (ex.: página HTML
+          // de erro de um proxy/timeout)
+          if (!response.ok) {
+            setStatus(
+              response.status === 504 || response.status === 502
+                ? '❌ O servidor demorou demais para responder. Tente novamente em instantes.'
+                : `❌ Erro inesperado do servidor (HTTP ${response.status}). Tente novamente.`
+            );
+            return;
+          }
+
+          // Sucesso: o arquivo vem direto no corpo da resposta
+          const nomeArquivo =
+            nomeDoContentDisposition(response.headers.get('Content-Disposition')) ||
+            'audio.mp3';
+
+          const blob = await response.blob();
+          const blobUrl = URL.createObjectURL(blob);
+
           setStatus(
-            `✅ Pronto! <a class="baixar" href="/api/file/${data.job}/${encodeURIComponent(data.arquivo)}">Clique aqui para baixar</a>`
+            `✅ Pronto! <a class="baixar" href="${blobUrl}" download="${nomeArquivo}">Clique aqui para baixar</a>`
           );
         } catch (e) {
           setStatus('❌ Erro de conexão: ' + e.message);
@@ -415,10 +455,21 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ query })
           });
-          const data = await response.json();
 
-          if (data.erro) {
-            setStatus('❌ ' + data.erro);
+          let data;
+          try {
+            data = await response.json();
+          } catch (parseErr) {
+            setStatus(
+              response.status === 504 || response.status === 502
+                ? '❌ O servidor demorou demais para responder. Tente novamente em instantes.'
+                : `❌ Erro inesperado do servidor (HTTP ${response.status}). Tente novamente.`
+            );
+            return;
+          }
+
+          if (!response.ok || data.erro) {
+            setStatus('❌ ' + (data.erro || `Erro HTTP ${response.status}.`));
             return;
           }
 
