@@ -573,34 +573,7 @@ def api_download():
 
         )
 
-
-        job = os.path.basename(
-            os.path.dirname(
-                arquivo
-            )
-        )
-
-
-        return jsonify(
-
-            {
-
-                "arquivo":
-                    os.path.basename(
-                        arquivo
-                    ),
-
-                "job":
-                    job
-
-            }
-
-        )
-
-
-
     except Exception as e:
-
 
         return jsonify(
 
@@ -612,6 +585,38 @@ def api_download():
             }
 
         ),500
+
+
+    # Em vez de devolver um link para o usuário clicar depois (que
+    # dependia do arquivo continuar no disco em um segundo request),
+    # devolvemos o arquivo direto nesta mesma resposta. Isso evita
+    # problemas em ambientes como o Render, onde o disco não é
+    # persistente e o serviço pode reiniciar a qualquer momento entre
+    # um request e outro.
+
+    pasta = os.path.dirname(arquivo)
+
+    nome_arquivo = os.path.basename(arquivo)
+
+    resposta = send_file(
+
+        arquivo,
+
+        as_attachment=True,
+
+        download_name=nome_arquivo
+
+    )
+
+    @resposta.call_on_close
+    def _limpar_pasta():
+
+        shutil.rmtree(
+            pasta,
+            ignore_errors=True
+        )
+
+    return resposta
 
 
 
